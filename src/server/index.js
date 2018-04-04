@@ -1,32 +1,13 @@
-var express = require('express'),
-    path = require('path'),
-    fs = require('fs');
+const express = require('express');
 
-var app = express();
-var staticRoot = __dirname + '/';
+const publicweb = process.env.PUBLICWEB || './dist/publicweb';
+const app = express();
 
-app.set('port', (process.env.PORT || 3000));
-
-app.use(express.static(staticRoot));
-
-app.use(function(req, res, next){
-
-    // if the request is not html then move along
-    var accept = req.accepts('html', 'json', 'xml');
-    if(accept !== 'html'){
-        return next();
-    }
-
-    // if the request has a '.' assume that it's for a file, move along
-    var ext = path.extname(req.path);
-    if (ext !== ''){
-        return next();
-    }
-
-    fs.createReadStream(staticRoot + 'index.html').pipe(res);
-
+app.use(express.static(publicweb));
+console.log(`serving ${publicweb}`);
+app.get('*', (req, res) => {
+  res.sendFile(`index.html`, { root: publicweb });
 });
 
-app.listen(app.get('port'), function() {
-    console.log('app running on port', app.get('port'));
-});
+const port = process.env.SERVER_PORT || '3000';
+app.listen(port, () => console.log(`API running on localhost:${port}`));
